@@ -1,17 +1,27 @@
 import React, { Component, PureComponent } from 'react'
 import reactCSS from 'reactcss'
+import throttle from 'lodash/throttle'
 import * as alpha from '../../helpers/alpha'
 
 import Checkboard from './Checkboard'
 
 export class Alpha extends (PureComponent || Component) {
+  constructor(props) {
+    super(props)
+
+    this.throttle = throttle((fn, data, e) => {
+      fn(data, e)
+    }, 50)
+  }
+
   componentWillUnmount() {
+    this.throttle.cancel()
     this.unbindEventListeners()
   }
 
   handleChange = (e) => {
     const change = alpha.calculateChange(e, this.props.hsl, this.props.direction, this.props.a, this.container)
-    change && typeof this.props.onChange === 'function' && this.props.onChange(change, e)
+    change && typeof this.props.onChange === 'function' && this.throttle(this.props.onChange, change, e)
   }
 
   handleMouseDown = (e) => {

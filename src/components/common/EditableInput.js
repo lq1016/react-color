@@ -27,14 +27,13 @@ export class EditableInput extends (PureComponent || Component) {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (
-      this.props.value !== this.state.value &&
-      (prevProps.value !== this.props.value || prevState.value !== this.state.value)
-    ) {
+    // Always update value from props to ensure consistency
+    if (this.props.value !== prevProps.value) {
+      const newValue = String(this.props.value).toUpperCase()
       if (this.input === document.activeElement) {
-        this.setState({ blurValue: String(this.props.value).toUpperCase() })
+        this.setState({ blurValue: newValue })
       } else {
-        this.setState({ value: String(this.props.value).toUpperCase(), blurValue: !this.state.blurValue && String(this.props.value).toUpperCase() })
+        this.setState({ value: newValue, blurValue: null })
       }
     }
   }
@@ -77,10 +76,13 @@ export class EditableInput extends (PureComponent || Component) {
   }
 
   setUpdatedValue(value, e) {
-    const onChangeValue = this.props.label ? this.getValueObjectWithLabel(value) : value
+    // Convert to number if it's a numeric input
+    const numericValue = !isNaN(value) ? Number(value) : value
+    const onChangeValue = this.props.label ? this.getValueObjectWithLabel(numericValue) : numericValue
     this.props.onChange && this.props.onChange(onChangeValue, e)
 
-    this.setState({ value })
+    // Keep the display value as string to maintain formatting
+    this.setState({ value: String(value) })
   }
 
   handleDrag = (e) => {
